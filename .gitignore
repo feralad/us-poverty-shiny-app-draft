@@ -1,0 +1,12 @@
+# RStudio project files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+
+# Memoise cache directory
+memoise_cache/
+
+# Downloaded data files (parquet, etc.)
+data/
