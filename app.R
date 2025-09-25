@@ -1261,7 +1261,7 @@ server <- function(input, output, session) {
         layer_id = "poverty_rates"
       ) %>%
       fit_bounds(
-        bbox = last_bbox
+        bbox = last_bbox()
       )
   })
   
