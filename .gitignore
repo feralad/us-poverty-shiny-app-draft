@@ -4,6 +4,7 @@
 .RData
 .Ruserdata
 .DS_Store
+to_do.R
 
 # Memoise cache directory
 memoise_cache/

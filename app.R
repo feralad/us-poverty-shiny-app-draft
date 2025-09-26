@@ -22,58 +22,70 @@ source("global.R")
 # ──────────────────────────────────────────────────────────────────────────────
 # UI ---------------------------------------------------------------------------
 # ──────────────────────────────────────────────────────────────────────────────
-ui <- page_sidebar(
-  # Use custom CSS
-  tags$style(HTML("
-  /* === Data Table CSV Button Customization === */
-  div.dt-buttons { float: right; margin-top: 10px; }
-  .btn-secondary.buttons-csv {
-    background: #fff !important;
-    color: #337ab7 !important;
-    border: 1px solid #337ab7 !important;
-    font-weight: bold;
-    border-radius: 4px;
-    padding: 6px 16px 6px 12px;
-    display: flex;
-    align-items: center;
-    transition: background 0.3s, color 0.3s;
-    gap: 0.5em;
-  }
-  .btn-secondary.buttons-csv svg {
-    fill: #337ab7 !important;
-    vertical-align: text-bottom;
-    margin-right: 6px;
-  }
-  .btn-secondary.buttons-csv:hover {
-    background: #337ab7 !important;
-    color: #fff !important;
-  }
-  .btn-secondary.buttons-csv:hover svg { fill: #fff !important; }
-  ")),
-  # Use custom theme
+ui <- page_navbar(
+  id = "master_tab",
+  title = tags$strong("U.S. Poverty Mapping Project"),
   theme = bs_theme(
     primary = "#337ab7",
     navbar_bg = "#337ab7",
     navbar_color = "#fff",
     navbar_brand_color = "#fff"
   ),
-  title = tagList(
-    tags$strong("U.S. Poverty Mapping Project"),
-    tags$span(style = "float: right; margin-left: 1rem;",
-              tags$a(
-                href = "https://www.linkedin.com/in/adamferalio/",
-                target = "_blank",
-                bsicons::bs_icon("linkedin", style = "color: #fff; fill: #fff;")
-              ),
-              tags$a(
-                href = "https://github.com/feralad/us-poverty-shiny-app-draft",
-                target = "_blank",
-                style = "margin-left: 0.5rem;",
-                bsicons::bs_icon("github", style = "color: #fff; fill: #fff;")
-              )
+  nav_panel(
+    title = "Map",
+    value = "map_tab",
+    card_body(
+      style = "display: flex; flex-direction: column; height: 100vh;",
+      div(
+        style = "flex: 1 1 auto; min-height: 200px;",
+        maplibreOutput("map", height = "100%")
+      ),
+      div(
+        style = "min-height: 32px; color: #666; font-size: 12px; font-style: italic; margin-top: 0;",
+        htmlOutput("map_footnote")
+      )
+    )
+  ),
+  nav_panel(
+    title = "Plot",
+    value = "plot_tab",
+    card_body(
+      style = "display: flex; flex-direction: column; height: 100vh;",
+      div(
+        style = "flex: 1 1 auto; min-height: 200px;",
+        plotlyOutput("scatterplot", height = "100%")
+      ),
+      div(
+        style = "min-height: 32px; color: #666; font-size: 12px; font-style: italic; margin-top: 0; margin-left: 5%;",
+        htmlOutput("plot_footnote")
+      )
+    )
+  ),
+  nav_panel(
+    title = "Data",
+    value = "data_tab",
+    card_body(
+      dataTableOutput("poverty_data_table")
+    )
+  ),
+  # Push all nav_items to right align
+  nav_spacer(),
+  nav_item(
+    tags$a(
+      href = "https://www.linkedin.com/in/adamferalio/",
+      target = "_blank",
+      bsicons::bs_icon("linkedin", style = "color: #fff; fill: #fff;")
+    )
+  ),
+  nav_item(
+    tags$a(
+      href = "https://github.com/feralad/us-poverty-shiny-app-draft",
+      target = "_blank",
+      bsicons::bs_icon("github", style = "color: #fff; fill: #fff;")
     )
   ),
   sidebar = sidebar(
+    title = "Filters",
     width = 315,
     accordion(
       id = "filters_accordion",
@@ -171,54 +183,44 @@ ui <- page_sidebar(
       label_busy = "Processing..."
     ),
     input_task_button(
-      id = "reset_button",  # Add a Reset Button
+      id = "reset_button",
       label = "Reset to Default",
       label_busy = "Resetting..."
     )
   ),
-  navset_card_tab(
-    id = "master_tab",
-    nav_panel(
-      title = "Map",
-      value = "map_tab",
-      card_body(
-        style = "display: flex; flex-direction: column; height: 100vh;",  # Full screen height
-        div(
-          style = "flex: 1 1 auto; min-height: 200px;",                   # Map area grows as needed
-          maplibreOutput("map", height = "100%")
-        ),
-        div(
-          style = "min-height: 32px; color: #666; font-size: 12px; font-style: italic; margin-top: 0;",
-          htmlOutput("map_footnote")
-        )
-      )
-    ),
-    nav_panel(
-      title = "Plot",
-      value = "plot_tab",
-      card_body(
-        style = "display: flex; flex-direction: column; height: 100vh;",
-        div(
-          style = "flex: 1 1 auto; min-height: 200px;",
-          plotlyOutput("scatterplot", height = "100%")
-        ),
-        div(
-          style = "min-height: 32px; color: #666; font-size: 12px; font-style: italic; margin-top: 0; margin-left: 5%;",
-          htmlOutput("plot_footnote")
-        )
-      )
-    ),
-    nav_panel(
-      title = "Data",
-      value = "data_tab",
-      navset_card_tab(
-        nav_panel(
-          "Poverty",
-          dataTableOutput("poverty_data_table")
-        )
-      )
-    )
-  )
+  # Custom CSS for Data Table CSV Button and Sidebar Title Spacing
+  ## Not related to "header" but necessary for bslib to work properly
+  header = tags$style(HTML("
+  div.dt-buttons { float: right; margin-top: 10px; }
+  .btn-secondary.buttons-csv {
+    background: #fff !important;
+    color: #337ab7 !important;
+    border: 1px solid #337ab7 !important;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 16px 6px 12px;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s, color 0.3s;
+    gap: 0.5em;
+  }
+  .btn-secondary.buttons-csv svg {
+    fill: #337ab7 !important;
+    vertical-align: text-bottom;
+    margin-right: 6px;
+  }
+  .btn-secondary.buttons-csv:hover {
+    background: #337ab7 !important;
+    color: #fff !important;
+  }
+  .btn-secondary.buttons-csv:hover svg { fill: #fff !important; }
+
+  /* Sidebar title spacing adjustment */
+  header.sidebar-title {
+  margin-top: -20px !important;
+  margin-bottom: 0px !important;
+  }
+  "))
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -385,6 +387,8 @@ server <- function(input, output, session) {
   
   ## -- Map --------------------------------------------------------------------
   
+  ### -- Prepare Map Data ------------------------------------------------------
+  
   # Directly define the US bounds as the initial bounding box
   ## Maplibre appears to take bbox in this structure
   us_bounds <- matrix(
@@ -398,6 +402,8 @@ server <- function(input, output, session) {
   
   # Define initial map data
   initial_map_data <- get_county_poverty_data(race_eth_f = "All")
+  
+  ### -- Render Map ------------------------------------------------------------
   
   # Create the map with the initial data and fit to the US bounds
   output$map <- renderMaplibre({
@@ -429,6 +435,13 @@ server <- function(input, output, session) {
         add = FALSE,
         unique_id = "poverty_rates_legend",
         layer_id = "poverty_rates"
+      ) %>%
+      add_navigation_control(
+        show_compass = TRUE,
+        show_zoom = TRUE,
+        visualize_pitch = TRUE,
+        position = "top-right",
+        orientation = "vertical"
       ) %>%
       fit_bounds(
         bbox = us_bounds  # Pass bbox directly
@@ -576,10 +589,9 @@ server <- function(input, output, session) {
     
     last_bbox(bbox_matrix)
     
-    # Clear layers and update map
+    # Clear layers/navigation control and update map
     maplibre_proxy("map") %>%
       clear_layer("poverty_rates") %>%
-      clear_layer("org_points") %>%
       clear_layer("poverty_extrusion")
     
     # Add layers based on selection
@@ -659,7 +671,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Map Footnote
+  ### -- Map Footnote ----------------------------------------------------------
   
   output$map_footnote <- renderUI({
     map_footnote_text <- paste0(
@@ -667,13 +679,15 @@ server <- function(input, output, session) {
       "*Poverty data are reported as estimates, not exact figures. Use the Reliability and Margin of Error filters to select reliable estimates.<br>",
       "*Poverty rates are based on the percentage of population in poverty: Extreme: >= 40%, Very High: >= 30%, High: >= 20%, Moderate: >= 10%, Low: < 10%.<br>",
       "*Data source: 2019-2023 American Community Survey 5-Year Estimates via tidycensus.<br>",
-      "*To change the pitch and/or angle of the map, hold Ctrl/control on keyboard and use mouse to drag map up/down (pitch) or left/right (angle).<br>",
+      "*To change the pitch and/or angle of the map, click on the up/down arrow button at the top right of the screen, hold down, and drag as desired.<br>",
       "</span>"
     )
     HTML(map_footnote_text)
   })
   
   ## -- Plot -------------------------------------------------------------------
+  
+  ### -- Prepare Plot Data -----------------------------------------------------
   
   # Helper function for displaying a blank plotly plot with a message
   empty_plotly_msg <- function(msg) {
@@ -745,7 +759,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # Render the plot
+  ### -- Render Plot -----------------------------------------------------------
   
   output$scatterplot <- renderPlotly({
     # Handle empty plot when app initially loads with no submitted data with empty message
@@ -993,7 +1007,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # Plot Footnote
+  ### -- Plot Footnote ---------------------------------------------------------
   
   # Helper to determine if plot is empty
   is_plot_empty <- reactive({
@@ -1024,7 +1038,8 @@ server <- function(input, output, session) {
   # Button label: SVG + text
   csv_btn_label <- paste0(download_svg, " CSV")
   
-  # Render poverty data table
+  ### -- Render Poverty Data Table ---------------------------------------------
+  
   output$poverty_data_table <- renderDataTable({
     # Create detailed variable labels for display
     poverty_data_table_var_labels <- c(
